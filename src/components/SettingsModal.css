@@ -198,3 +198,66 @@
   border-color: var(--state-dupe-border);
   background: var(--state-dupe);
 }
+
+/* Cluster section */
+.settings-modal__cluster-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.settings-modal__toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.settings-modal__checkbox {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--accent-gold);
+  cursor: pointer;
+}
+
+.settings-modal__cluster-status {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid;
+}
+
+.settings-modal__cluster-status--ok {
+  color: var(--state-worked-text);
+  border-color: var(--state-worked-border);
+  background: var(--state-worked);
+}
+
+.settings-modal__cluster-status--connecting {
+  color: var(--accent-gold);
+  border-color: var(--accent-gold-dim);
+  background: transparent;
+}
+
+.settings-modal__cluster-status--off {
+  color: var(--text-muted);
+  border-color: var(--border-subtle);
+  background: transparent;
+}
+
+.settings-modal__row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.settings-modal__hint {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  margin-top: 0.125rem;
+}

@@ -1,26 +1,42 @@
 import { useState } from "react";
 import { MdClose } from "react-icons/md";
 import { useSettings } from "../store/settings";
+import { useCluster } from "../store/cluster";
 import { MODES } from "../data/stations";
 import type { Mode } from "../data/stations";
 import type { Theme } from "../store/types";
 import { SegmentedButtons } from "./SegmentedButtons";
 import "./SettingsModal.css";
 
+const POPULAR_SERVERS = [
+  { label: "VE7CC (NA)", host: "dxc.ve7cc.net", port: 23 },
+  { label: "W3LPL (NA)", host: "w3lpl.net", port: 7373 },
+  { label: "N2YO (NA)", host: "www.n2yo.com", port: 7373 },
+  { label: "DX.SUMMITLINK (EU)", host: "dx.summitlink.net", port: 8000 },
+  { label: "GB7TLH (EU)", host: "gb7tlh.ampr.org", port: 8000 },
+  { label: "VK3RGL (OC)", host: "vk3rgl.net", port: 9000 },
+];
+
 interface SettingsModalProps {
   onClose: () => void;
-  /** When true, callsign and QTH are required before the modal can be closed. */
   required?: boolean;
 }
 
 export function SettingsModal({ onClose, required = false }: SettingsModalProps) {
   const settings = useSettings();
+  const clusterStatus = useCluster((s) => s.status);
+  const clusterConnecting = useCluster((s) => s.connecting);
+
   const [myCallsign, setMyCallsign] = useState(settings.myCallsign);
   const [myName, setMyName] = useState(settings.myName);
   const [myQth, setMyQth] = useState(settings.myQth);
   const [defaultMode, setDefaultMode] = useState(settings.defaultMode);
   const [defaultRst, setDefaultRst] = useState(settings.defaultRst);
   const [theme, setTheme] = useState(settings.theme);
+  const [clusterEnabled, setClusterEnabled] = useState(settings.clusterEnabled);
+  const [clusterHost, setClusterHost] = useState(settings.clusterHost);
+  const [clusterPort, setClusterPort] = useState(String(settings.clusterPort));
+  const [spotWindowMins, setSpotWindowMins] = useState(String(settings.spotWindowMins));
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const canClose = () => {
@@ -47,8 +63,11 @@ export function SettingsModal({ onClose, required = false }: SettingsModalProps)
       defaultMode,
       defaultRst,
       theme,
+      clusterEnabled,
+      clusterHost: clusterHost.trim(),
+      clusterPort: parseInt(clusterPort, 10) || 23,
+      spotWindowMins: parseInt(spotWindowMins, 10) || 30,
     });
-    // Persist to SQLite backend
     await settings.saveToBackend();
     onClose();
   };
@@ -155,6 +174,86 @@ export function SettingsModal({ onClose, required = false }: SettingsModalProps)
               onChange={(v) => setTheme(v.toLowerCase() as Theme)}
             />
           </div>
+
+          {/* DX Cluster section */}
+          {!required && (
+            <div className="settings-modal__section">
+              <h3 className="settings-modal__section-title">DX Cluster</h3>
+
+              <div className="settings-modal__cluster-toggle">
+                <label className="settings-modal__toggle-label">
+                  <input
+                    type="checkbox"
+                    className="settings-modal__checkbox"
+                    checked={clusterEnabled}
+                    onChange={(e) => setClusterEnabled(e.target.checked)}
+                  />
+                  Enable DX cluster spotting
+                </label>
+                {clusterEnabled && (
+                  <span className={`settings-modal__cluster-status ${clusterStatus.connected ? "settings-modal__cluster-status--ok" : clusterConnecting ? "settings-modal__cluster-status--connecting" : "settings-modal__cluster-status--off"}`}>
+                    {clusterConnecting ? "Connecting…" : clusterStatus.connected ? `● ${clusterStatus.host}` : `○ ${clusterStatus.message}`}
+                  </span>
+                )}
+              </div>
+
+              {clusterEnabled && (
+                <>
+                  <label className="settings-modal__label">
+                    Popular Servers
+                    <select
+                      className="settings-modal__input"
+                      onChange={(e) => {
+                        const server = POPULAR_SERVERS.find((s) => s.host === e.target.value);
+                        if (server) {
+                          setClusterHost(server.host);
+                          setClusterPort(String(server.port));
+                        }
+                      }}
+                      value={POPULAR_SERVERS.find((s) => s.host === clusterHost)?.host || ""}
+                    >
+                      <option value="">— Custom —</option>
+                      {POPULAR_SERVERS.map((s) => (
+                        <option key={s.host} value={s.host}>{s.label} ({s.host}:{s.port})</option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="settings-modal__row">
+                    <label className="settings-modal__label" style={{ flex: 2 }}>
+                      Host
+                      <input
+                        className="settings-modal__input font-mono"
+                        value={clusterHost}
+                        onChange={(e) => setClusterHost(e.target.value.trim())}
+                        placeholder="dxc.ve7cc.net"
+                      />
+                    </label>
+                    <label className="settings-modal__label" style={{ flex: 1 }}>
+                      Port
+                      <input
+                        className="settings-modal__input font-mono"
+                        value={clusterPort}
+                        onChange={(e) => setClusterPort(e.target.value)}
+                        placeholder="23"
+                        maxLength={5}
+                      />
+                    </label>
+                  </div>
+                  <label className="settings-modal__label">
+                    Spot window (minutes)
+                    <input
+                      className="settings-modal__input font-mono"
+                      value={spotWindowMins}
+                      onChange={(e) => setSpotWindowMins(e.target.value)}
+                      placeholder="30"
+                      maxLength={3}
+                    />
+                    <span className="settings-modal__hint">Spots older than this are hidden from the station grid</span>
+                  </label>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="settings-modal__footer">

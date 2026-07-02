@@ -1,6 +1,8 @@
 import { useEffect, useCallback, useState, useRef } from "react";
+import { listen } from "@tauri-apps/api/event";
 import { useSettings } from "./store/settings";
 import { useContacts } from "./store/contacts";
+import { useCluster, type DxSpot } from "./store/cluster";
 import { Toolbar } from "./components/Toolbar";
 import { ContactEntry } from "./components/ContactEntry";
 import { SweepTracker } from "./components/SweepTracker";
@@ -14,11 +16,17 @@ export default function App() {
   const theme = useSettings((s) => s.theme);
   const myCallsign = useSettings((s) => s.myCallsign);
   const myQth = useSettings((s) => s.myQth);
+  const clusterEnabled = useSettings((s) => s.clusterEnabled);
+  const clusterHost = useSettings((s) => s.clusterHost);
+  const clusterPort = useSettings((s) => s.clusterPort);
+  const spotWindowMins = useSettings((s) => s.spotWindowMins);
   const settingsLoading = useSettings((s) => s.loading);
   const initializeSettings = useSettings((s) => s.initialize);
   const contactsLoading = useContacts((s) => s.loading);
   const initializeContacts = useContacts((s) => s.initialize);
   const undoLastContact = useContacts((s) => s.undoLastContact);
+  const contacts = useContacts((s) => s.contacts);
+  const { connect: clusterConnect, disconnect: clusterDisconnect, processSpot } = useCluster();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [firstRunSetup, setFirstRunSetup] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -42,6 +50,28 @@ export default function App() {
       }
     }
   }, [settingsLoading, contactsLoading, myCallsign, myQth]);
+
+  // Manage cluster connection when settings change
+  useEffect(() => {
+    if (settingsLoading || !myCallsign.trim()) return;
+    if (clusterEnabled) {
+      clusterConnect(clusterHost, clusterPort, myCallsign);
+    } else {
+      clusterDisconnect();
+    }
+    return () => { clusterDisconnect(); };
+  }, [clusterEnabled, clusterHost, clusterPort, myCallsign, settingsLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Process incoming spots for notifications
+  useEffect(() => {
+    const unlisten = listen<DxSpot>("cluster-spot", (event) => {
+      const spot = event.payload;
+      const workedCallsigns = new Set(contacts.map((c) => c.callsign));
+      const workedBandMode = new Set(contacts.map((c) => `${c.callsign}|${c.band}|${c.mode}`));
+      processSpot(spot, workedCallsigns, workedBandMode, spotWindowMins);
+    });
+    return () => { unlisten.then((fn) => fn()); };
+  }, [contacts, processSpot, spotWindowMins]);
 
   // Apply theme to document root
   useEffect(() => {

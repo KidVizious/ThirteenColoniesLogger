@@ -37,6 +37,10 @@ pub struct Settings {
     pub default_rst: String,
     pub theme: String,
     pub active_year: i32,
+    pub cluster_enabled: String,
+    pub cluster_host: String,
+    pub cluster_port: String,
+    pub spot_window_mins: String,
 }
 
 impl Default for Settings {
@@ -49,6 +53,10 @@ impl Default for Settings {
             default_rst: "59".to_string(),
             theme: "dark".to_string(),
             active_year: chrono::Utc::now().year(),
+            cluster_enabled: "false".to_string(),
+            cluster_host: "dxc.ve7cc.net".to_string(),
+            cluster_port: "23".to_string(),
+            spot_window_mins: "30".to_string(),
         }
     }
 }

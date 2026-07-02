@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
-import { MdSettings, MdFileDownload, MdDarkMode, MdLightMode, MdBrightness6, MdExpandMore } from "react-icons/md";
+import { MdSettings, MdFileDownload, MdDarkMode, MdLightMode, MdBrightness6, MdExpandMore, MdSatelliteAlt } from "react-icons/md";
 import { useSettings } from "../store/settings";
 import { useContacts } from "../store/contacts";
+import { useCluster } from "../store/cluster";
 import "./Toolbar.css";
 
 interface ToolbarProps {
@@ -12,7 +13,10 @@ interface ToolbarProps {
 
 export function Toolbar({ onSettingsClick }: ToolbarProps) {
   const { myCallsign, theme, setTheme } = useSettings();
+  const clusterEnabled = useSettings((s) => s.clusterEnabled);
   const contacts = useContacts((s) => s.contacts);
+  const clusterStatus = useCluster((s) => s.status);
+  const clusterConnecting = useCluster((s) => s.connecting);
   const activeYear = useContacts((s) => s.activeYear);
   const eventLogs = useContacts((s) => s.eventLogs);
   const setActiveYear = useContacts((s) => s.setActiveYear);
@@ -158,6 +162,16 @@ export function Toolbar({ onSettingsClick }: ToolbarProps) {
         </span>
 
         <span className="toolbar__qso-badge">{contacts.length}</span>
+
+        {clusterEnabled && (
+          <span
+            className={`toolbar__cluster-badge ${clusterStatus.connected ? "toolbar__cluster-badge--on" : clusterConnecting ? "toolbar__cluster-badge--connecting" : "toolbar__cluster-badge--off"}`}
+            title={clusterStatus.message}
+          >
+            <MdSatelliteAlt size={12} />
+            {clusterConnecting ? "…" : clusterStatus.connected ? "CLUSTER" : "OFFLINE"}
+          </span>
+        )}
 
         <button className="toolbar__btn" onClick={handleExport} title="Export ADIF">
           <MdFileDownload size={16} />

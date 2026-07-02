@@ -3,9 +3,10 @@
 //! All database interactions go through these commands, which validate inputs
 //! and handle errors gracefully. The frontend never touches the DB directly.
 
-use tauri::State;
+use tauri::{AppHandle, State};
 use uuid::Uuid;
 
+use crate::cluster::ClusterState;
 use crate::db::{Database, DbError};
 use crate::models::{EventLog, QsoRecord, Settings};
 
@@ -165,7 +166,11 @@ pub fn get_settings(db: State<'_, Database>) -> Result<Settings, DbError> {
             "active_year" => {
                 settings.active_year = value.parse().unwrap_or(settings.active_year)
             }
-            _ => {} // Ignore unknown keys
+            "cluster_enabled" => settings.cluster_enabled = value,
+            "cluster_host" => settings.cluster_host = value,
+            "cluster_port" => settings.cluster_port = value,
+            "spot_window_mins" => settings.spot_window_mins = value,
+            _ => {}
         }
     }
 
@@ -182,6 +187,10 @@ pub fn save_settings(db: State<'_, Database>, settings: Settings) -> Result<(), 
     db.set_setting("default_rst", &settings.default_rst)?;
     db.set_setting("theme", &settings.theme)?;
     db.set_setting("active_year", &settings.active_year.to_string())?;
+    db.set_setting("cluster_enabled", &settings.cluster_enabled)?;
+    db.set_setting("cluster_host", &settings.cluster_host)?;
+    db.set_setting("cluster_port", &settings.cluster_port)?;
+    db.set_setting("spot_window_mins", &settings.spot_window_mins)?;
     Ok(())
 }
 
@@ -363,4 +372,58 @@ fn map_submode(mode: &str) -> Option<&str> {
         "FT4" => Some("FT4"),
         _ => None,
     }
+}
+
+// --- DX Cluster Commands ---
+
+/// Connect to a DX cluster server.
+#[tauri::command]
+pub async fn cluster_connect(
+    app: AppHandle,
+    state: State<'_, ClusterState>,
+    host: String,
+    port: u16,
+    my_callsign: String,
+) -> Result<(), String> {
+    // Validate inputs
+    if host.trim().is_empty() {
+        return Err("Host cannot be empty".to_string());
+    }
+    if my_callsign.trim().is_empty() {
+        return Err("Callsign required to connect to cluster".to_string());
+    }
+
+    // Disconnect any existing session
+    {
+        let mut handle = state.handle.lock().unwrap();
+        if let Some(old) = handle.take() {
+            old.disconnect();
+        }
+    }
+
+    let new_handle = crate::cluster::connect(
+        app,
+        host.trim().to_string(),
+        port,
+        my_callsign.trim().to_uppercase(),
+    )
+    .await?;
+
+    *state.handle.lock().unwrap() = Some(new_handle);
+    Ok(())
+}
+
+/// Disconnect from the current DX cluster.
+#[tauri::command]
+pub fn cluster_disconnect(state: State<'_, ClusterState>) {
+    let mut handle = state.handle.lock().unwrap();
+    if let Some(h) = handle.take() {
+        h.disconnect();
+    }
+}
+
+/// Returns whether the cluster is currently connected.
+#[tauri::command]
+pub fn cluster_is_connected(state: State<'_, ClusterState>) -> bool {
+    state.handle.lock().unwrap().is_some()
 }

@@ -31,14 +31,18 @@ function schedulePersist() {
 
 export const useSettings = create<SettingsState>()(
   subscribeWithSelector((set, get) => ({
-    myCallsign: "",
-    myName: "",
-    myQth: "",
-    defaultMode: "SSB" as Mode,
-    defaultRst: "59",
-    theme: "dark" as Theme,
-    activeYear: new Date().getUTCFullYear(),
-    loading: true,
+  myCallsign: "",
+  myName: "",
+  myQth: "",
+  defaultMode: "SSB" as Mode,
+  defaultRst: "59",
+  theme: "dark" as Theme,
+  activeYear: new Date().getUTCFullYear(),
+  clusterEnabled: false,
+  clusterHost: "dxc.ve7cc.net",
+  clusterPort: 23,
+  spotWindowMins: 30,
+  loading: true,
 
     initialize: async () => {
       try {
@@ -60,19 +64,22 @@ export const useSettings = create<SettingsState>()(
     setActiveYear: (v) => set({ activeYear: v }),
     updateSettings: (s) => set(s),
 
-    saveToBackend: async () => {
-      const state = get();
-      // Don't persist while still loading initial state
-      if (state.loading) return;
-      const record = settingsToRecord({
-        myCallsign: state.myCallsign,
-        myName: state.myName,
-        myQth: state.myQth,
-        defaultMode: state.defaultMode,
-        defaultRst: state.defaultRst,
-        theme: state.theme,
-        activeYear: state.activeYear,
-      });
+  saveToBackend: async () => {
+    const state = get();
+    if (state.loading) return;
+    const record = settingsToRecord({
+      myCallsign: state.myCallsign,
+      myName: state.myName,
+      myQth: state.myQth,
+      defaultMode: state.defaultMode,
+      defaultRst: state.defaultRst,
+      theme: state.theme,
+      activeYear: state.activeYear,
+      clusterEnabled: state.clusterEnabled,
+      clusterHost: state.clusterHost,
+      clusterPort: state.clusterPort,
+      spotWindowMins: state.spotWindowMins,
+    });
       try {
         await invoke("save_settings", { settings: record });
       } catch (err) {
@@ -93,6 +100,10 @@ useSettings.subscribe(
     defaultRst: state.defaultRst,
     theme: state.theme,
     activeYear: state.activeYear,
+    clusterEnabled: state.clusterEnabled,
+    clusterHost: state.clusterHost,
+    clusterPort: state.clusterPort,
+    spotWindowMins: state.spotWindowMins,
   }),
   () => {
     // Only auto-persist after initial load is complete

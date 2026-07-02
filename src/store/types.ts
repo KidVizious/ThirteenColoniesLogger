@@ -46,6 +46,11 @@ export interface Settings {
   defaultRst: string;
   theme: Theme;
   activeYear: number;
+  // DX Cluster
+  clusterEnabled: boolean;
+  clusterHost: string;
+  clusterPort: number;
+  spotWindowMins: number;
 }
 
 /** Maps to the Rust Settings struct */
@@ -57,6 +62,10 @@ export interface SettingsRecord {
   default_rst: string;
   theme: string;
   active_year: number;
+  cluster_enabled: string;   // stored as "true"/"false"
+  cluster_host: string;
+  cluster_port: string;      // stored as string
+  spot_window_mins: string;  // stored as string
 }
 
 // Conversion helpers
@@ -85,6 +94,10 @@ export function settingsRecordToSettings(record: SettingsRecord): Settings {
     defaultRst: record.default_rst,
     theme: record.theme as Theme,
     activeYear: record.active_year,
+    clusterEnabled: record.cluster_enabled === "true",
+    clusterHost: record.cluster_host || "dxc.ve7cc.net",
+    clusterPort: parseInt(record.cluster_port || "23", 10),
+    spotWindowMins: parseInt(record.spot_window_mins || "30", 10),
   };
 }
 
@@ -97,5 +110,9 @@ export function settingsToRecord(settings: Settings): SettingsRecord {
     default_rst: settings.defaultRst,
     theme: settings.theme,
     active_year: settings.activeYear,
+    cluster_enabled: settings.clusterEnabled ? "true" : "false",
+    cluster_host: settings.clusterHost,
+    cluster_port: String(settings.clusterPort),
+    spot_window_mins: String(settings.spotWindowMins),
   };
 }
