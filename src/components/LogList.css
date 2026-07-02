@@ -215,5 +215,9 @@
 }
 
 .log-list__edit-input--time {
-  width: 120px;
+  width: 50px;
+}
+
+.log-list__edit-input--date {
+  width: 90px;
 }

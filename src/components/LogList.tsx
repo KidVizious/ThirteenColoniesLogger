@@ -5,7 +5,7 @@ import { STATION_MAP } from "../data/stations";
 import type { QSO } from "../store/types";
 import "./LogList.css";
 
-const DEFAULT_COL_WIDTHS = [40, 80, 90, 120, 55, 70, 55, 45, 45, 50, 150, 60];
+const DEFAULT_COL_WIDTHS = [40, 80, 60, 90, 120, 55, 70, 55, 45, 45, 50, 150, 60];
 
 export function LogList() {
   const { contacts, deleteContact, editContact } = useContacts();
@@ -14,9 +14,11 @@ export function LogList() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<QSO>>({});
-  const [editTimeRaw, setEditTimeRaw] = useState("");
   const [colWidths, setColWidths] = useState<number[]>(DEFAULT_COL_WIDTHS);
   const colResizing = useRef<{ idx: number; startX: number; startW: number } | null>(null);
+  // Separate raw strings for date and time editing to avoid crashes on intermediate input
+  const [editTimeRaw, setEditTimeRaw] = useState("");
+  const [editDateRaw, setEditDateRaw] = useState("");
 
   const handleColResizeStart = useCallback((e: React.MouseEvent, colIdx: number) => {
     e.preventDefault();
@@ -62,14 +64,21 @@ export function LogList() {
       rcvdRst: qso.rcvdRst,
       utcTime: qso.utcTime,
     });
-    // Initialize raw time string for editing
+    // Initialize raw date/time strings for editing
     const d = new Date(qso.utcTime);
-    setEditTimeRaw(isNaN(d.getTime()) ? qso.utcTime : d.toISOString().slice(0, 16).replace("T", " "));
+    if (!isNaN(d.getTime())) {
+      setEditDateRaw(d.toISOString().slice(0, 10));       // YYYY-MM-DD
+      setEditTimeRaw(d.toISOString().slice(11, 16));      // HH:MM
+    } else {
+      setEditDateRaw("");
+      setEditTimeRaw("");
+    }
   };
 
   const saveEdit = (id: string) => {
-    // Parse the raw time back to ISO before saving
-    const parsed = new Date(editTimeRaw.replace(" ", "T") + ":00.000Z");
+    // Recombine date + time raw strings back to ISO
+    const combined = `${editDateRaw}T${editTimeRaw}:00.000Z`;
+    const parsed = new Date(combined);
     const finalValues = {
       ...editValues,
       utcTime: isNaN(parsed.getTime()) ? editValues.utcTime : parsed.toISOString(),
@@ -78,20 +87,22 @@ export function LogList() {
     setEditingId(null);
     setEditValues({});
     setEditTimeRaw("");
+    setEditDateRaw("");
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditValues({});
     setEditTimeRaw("");
+    setEditDateRaw("");
+  };
+
+  const formatDate = (iso: string) => {
+    try { return new Date(iso).toISOString().slice(0, 10); } catch { return ""; }
   };
 
   const formatTime = (iso: string) => {
-    try {
-      return new Date(iso).toISOString().slice(11, 16);
-    } catch {
-      return iso;
-    }
+    try { return new Date(iso).toISOString().slice(11, 16); } catch { return iso; }
   };
 
   return (
@@ -122,7 +133,7 @@ export function LogList() {
         <table className="log-list__table">
           <thead>
             <tr>
-              {["#", "UTC TIME", "CALLSIGN", "COLONY / NAME", "BAND", "FREQ", "MODE", "SNT", "RCV", "QTH", "NOTES", ""].map((label, i) => (
+              {["#", "DATE (UTC)", "TIME (UTC)", "CALLSIGN", "COLONY / NAME", "BAND", "FREQ", "MODE", "SNT", "RCV", "QTH", "NOTES", ""].map((label, i) => (
                 <th key={i} style={{ width: colWidths[i] }}>
                   {label}
                   {i < colWidths.length - 1 && (
@@ -158,10 +169,22 @@ export function LogList() {
                   <td className="font-mono">
                     {isEditing ? (
                       <input
+                        className="log-list__edit-input log-list__edit-input--date font-mono"
+                        value={editDateRaw}
+                        onChange={(e) => setEditDateRaw(e.target.value)}
+                        placeholder="YYYY-MM-DD"
+                      />
+                    ) : (
+                      formatDate(qso.utcTime)
+                    )}
+                  </td>
+                  <td className="font-mono">
+                    {isEditing ? (
+                      <input
                         className="log-list__edit-input log-list__edit-input--time font-mono"
                         value={editTimeRaw}
                         onChange={(e) => setEditTimeRaw(e.target.value)}
-                        placeholder="YYYY-MM-DD HH:MM"
+                        placeholder="HH:MM"
                       />
                     ) : (
                       formatTime(qso.utcTime)
