@@ -6,7 +6,7 @@ on:
       - "v*"
 
 jobs:
-  release:
+  build:
     permissions:
       contents: write
     strategy:
@@ -52,15 +52,41 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
-      - name: Build and release
+      - name: Build (no release)
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tauriScript: npx tauri
-          tagName: ${{ github.ref_name }}
-          releaseName: "13 Colonies Logger ${{ github.ref_name }}"
-          releaseBody: "See the assets below to download the installer for your platform."
-          releaseDraft: true
-          prerelease: false
           args: ${{ matrix.args }}
+          # Disable release creation
+          releaseDraft: false
+          publish: false
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}
+          path: src-tauri/target/**/*
+          retention-days: 7
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "13 Colonies Logger ${{ github.ref_name }}"
+          body: "See the assets below to download the installer for your platform."
+          draft: true
+          prerelease: false
+          files: artifacts/**/*
