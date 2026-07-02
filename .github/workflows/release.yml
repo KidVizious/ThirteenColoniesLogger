@@ -43,6 +43,14 @@ jobs:
           node-version: "22"
           cache: "npm"
 
+      - name: Sync app version from git tag
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run: |
+          export RELEASE_VERSION="${RELEASE_VERSION#v}"
+          node -e "const fs=require('fs'); const version=process.env.RELEASE_VERSION; const updateJson=(file)=>{const data=JSON.parse(fs.readFileSync(file,'utf8')); data.version=version; fs.writeFileSync(file, JSON.stringify(data, null, 2)+'\n');}; updateJson('package.json'); updateJson('package-lock.json'); updateJson('src-tauri/tauri.conf.json'); const cargoPath='src-tauri/Cargo.toml'; let cargo=fs.readFileSync(cargoPath,'utf8'); cargo=cargo.replace(/(^version\s*=\s*\")[^\"]+(\"\s*$)/m, (_,prefix,suffix)=>prefix+version+suffix); fs.writeFileSync(cargoPath,cargo);"
+
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:

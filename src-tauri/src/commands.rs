@@ -240,7 +240,8 @@ pub fn export_adif(db: State<'_, Database>, year: i32, file_path: String) -> Res
     writeln!(adif).unwrap();
     write!(adif, "<programid:22>13ColoniesEventLogger").unwrap();
     writeln!(adif).unwrap();
-    write!(adif, "<programversion:5>0.1.0").unwrap();
+    let program_version = env!("CARGO_PKG_VERSION");
+    write!(adif, "<programversion:{}>{}", program_version.len(), program_version).unwrap();
     writeln!(adif).unwrap();
     writeln!(adif, "<eoh>").unwrap();
     writeln!(adif).unwrap();
