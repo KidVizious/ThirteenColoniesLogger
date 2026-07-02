@@ -1,0 +1,129 @@
+.station-tile {
+  position: relative;
+  padding: 0.5rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--state-needed);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: border-color 300ms, background-color 300ms, transform 350ms;
+  cursor: default;
+}
+
+.station-tile--worked {
+  border-color: var(--state-worked-border);
+  background: var(--state-worked);
+  animation: tile-worked 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.station-tile--worked .station-tile__callsign {
+  color: var(--state-worked-text);
+}
+
+.station-tile--bonus-needed {
+  border: 1px dashed var(--accent-gold-dim);
+}
+
+.station-tile--bonus-worked {
+  border-color: var(--state-bonus-border);
+  background: var(--state-bonus);
+  animation: tile-worked 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.station-tile__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.station-tile__callsign {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.station-tile__check {
+  margin-right: 0.125rem;
+  color: var(--state-worked-text);
+}
+
+.station-tile__number {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+}
+
+.station-tile__name {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+.station-tile__pips {
+  display: flex;
+  gap: 3px;
+  margin-top: 0.25rem;
+}
+
+.station-tile__pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border-default);
+}
+
+.station-tile__pip--filled {
+  background: var(--accent-gold);
+}
+
+/* Tooltip */
+.station-tile__tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 100;
+  margin-top: 0.25rem;
+  padding: 0.75rem;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  min-width: 220px;
+  animation: fade-in 150ms;
+}
+
+.station-tile__tooltip-header {
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.station-tile__tooltip-meta {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.station-tile__tooltip-matrix {
+  width: 100%;
+  font-size: 0.625rem;
+  text-align: center;
+  border-collapse: collapse;
+  margin-bottom: 0.375rem;
+}
+
+.station-tile__tooltip-matrix th {
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 0.125rem 0.25rem;
+}
+
+.station-tile__tooltip-matrix td {
+  color: var(--text-secondary);
+  padding: 0.125rem 0.25rem;
+}
+
+.station-tile__tooltip-count {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}

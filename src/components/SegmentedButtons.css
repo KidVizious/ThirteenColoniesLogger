@@ -1,0 +1,42 @@
+.segmented-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+}
+
+.segmented-buttons__btn {
+  flex: 1;
+  min-width: 0;
+  height: 1.875rem;
+  padding: 0 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: none;
+  border-right: 1px solid var(--border-default);
+  transition: background 100ms, color 100ms;
+  white-space: nowrap;
+}
+
+.segmented-buttons__btn:last-child {
+  border-right: none;
+}
+
+.segmented-buttons__btn:hover {
+  background: var(--bg-overlay);
+}
+
+.segmented-buttons__btn--active {
+  background: var(--accent-navy);
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+  font-weight: 600;
+}
+
+.segmented-buttons__btn--active:hover {
+  background: var(--accent-navy-bright);
+}

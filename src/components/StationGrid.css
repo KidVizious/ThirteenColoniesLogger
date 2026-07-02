@@ -1,0 +1,10 @@
+.station-grid {
+  margin-bottom: 1.5rem;
+}
+
+.station-grid__colonies,
+.station-grid__bonus {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.5rem;
+}

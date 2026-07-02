@@ -1,0 +1,95 @@
+/* App shell grid layout */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.app-shell.app-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.loading-text {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.app-header {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  height: 48px;
+}
+
+.app-main {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.entry-column {
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.tracker-column {
+  background: var(--bg-base);
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+/* Resize handle between main and log panel */
+.log-resize-handle {
+  height: 6px;
+  cursor: ns-resize;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.log-resize-handle:hover,
+.log-resize-handle.dragging {
+  background: var(--bg-elevated);
+}
+
+.log-resize-handle::after {
+  content: "";
+  width: 32px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border-default);
+}
+
+.log-resize-handle:hover::after,
+.log-resize-handle.dragging::after {
+  background: var(--accent-gold);
+}
+
+.log-panel {
+  background: var(--bg-surface);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100px;
+  flex-shrink: 0;
+}
