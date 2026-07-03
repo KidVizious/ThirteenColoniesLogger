@@ -141,22 +141,29 @@ export const useCluster = create<ClusterState>()((set, get) => ({
         : `📡 ${spot.callsign} on new band/mode`;
 
       const body = isNewStation
-        ? `${spot.frequency.toFixed(1)} MHz · ${spot.mode} · Not yet worked`
-        : `${spot.frequency.toFixed(1)} MHz · ${spot.mode} · New ${spot.band} ${spot.mode} opportunity`;
+        ? `${parseFloat(spot.frequency.toFixed(5))} MHz · ${spot.mode} · Not yet worked`
+        : `${parseFloat(spot.frequency.toFixed(5))} MHz · ${spot.mode} · New ${spot.band} ${spot.mode} opportunity`;
 
       sendNotification({ title, body });
     }
   },
 }));
 
-/** Returns the most recent spot for each colony/bonus station within the window */
-export function getActiveSpots(spots: DxSpot[], windowMins: number): Map<string, DxSpot> {
+/** Returns the most recent spot for each colony/bonus station within the window,
+ *  excluding any spot whose callsign+band+mode has already been logged. */
+export function getActiveSpots(
+  spots: DxSpot[],
+  windowMins: number,
+  workedBandMode: Set<string>   // Set of "CALLSIGN|band|mode" keys from the contact log
+): Map<string, DxSpot> {
   const cutoff = Date.now() - windowMins * 60 * 1000;
   const result = new Map<string, DxSpot>();
 
   for (const spot of spots) {
     if (!STATION_MAP.has(spot.callsign)) continue;
     if (new Date(spot.utc_time).getTime() < cutoff) continue;
+    // Skip if this exact band+mode is already in the log
+    if (workedBandMode.has(`${spot.callsign}|${spot.band}|${spot.mode}`)) continue;
     // spots are newest-first; first match per callsign is the most recent
     if (!result.has(spot.callsign)) {
       result.set(spot.callsign, spot);

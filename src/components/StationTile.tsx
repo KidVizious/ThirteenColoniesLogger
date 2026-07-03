@@ -5,13 +5,21 @@ import type { DxSpot } from "../store/cluster";
 import { MODES } from "../data/stations";
 import "./StationTile.css";
 
+/** Format a frequency in MHz, preserving full kHz precision and stripping trailing zeros.
+ *  DX cluster kHz values have at most 1 decimal place (e.g. 14046.25 kHz → 14.04625 MHz),
+ *  so we need up to 5 decimal places. */
+function formatFreq(mhz: number): string {
+  return parseFloat(mhz.toFixed(5)).toString();
+}
+
 interface StationTileProps {
   station: Station;
   contacts: QSO[];
   activeSpot?: DxSpot;
+  onSpotClick?: (spot: DxSpot) => void;
 }
 
-export function StationTile({ station, contacts, activeSpot }: StationTileProps) {
+export function StationTile({ station, contacts, activeSpot, onSpotClick }: StationTileProps) {
   const [showTooltip, setShowTooltip] = useState(false);
 
   const stationContacts = contacts.filter((c) => c.callsign === station.callsign);
@@ -71,8 +79,12 @@ export function StationTile({ station, contacts, activeSpot }: StationTileProps)
 
       {/* Spot badge */}
       {activeSpot && (
-        <div className={`station-tile__spot-badge ${spotIsNewStation ? "station-tile__spot-badge--new" : spotIsNewBandMode ? "station-tile__spot-badge--bandmode" : ""}`}>
-          <span className="station-tile__spot-freq font-mono">{activeSpot.frequency.toFixed(1)}</span>
+        <div
+          className={`station-tile__spot-badge station-tile__spot-badge--clickable ${spotIsNewStation ? "station-tile__spot-badge--new" : spotIsNewBandMode ? "station-tile__spot-badge--bandmode" : ""}`}
+          onClick={(e) => { e.stopPropagation(); onSpotClick?.(activeSpot); }}
+          title="Click to prefill contact entry"
+        >
+          <span className="station-tile__spot-freq font-mono">{formatFreq(activeSpot.frequency)}</span>
           <span className="station-tile__spot-mode">{activeSpot.mode}</span>
           <span className="station-tile__spot-age">{spotAgeMin === 0 ? "<1m" : `${spotAgeMin}m`}</span>
         </div>
@@ -100,7 +112,7 @@ export function StationTile({ station, contacts, activeSpot }: StationTileProps)
           </div>
           {activeSpot && (
             <div className="station-tile__tooltip-spot">
-              📡 Spotted: {activeSpot.frequency.toFixed(1)} MHz · {activeSpot.mode}
+              📡 Spotted: {formatFreq(activeSpot.frequency)} MHz · {activeSpot.mode}
               {spotIsNewStation && " · Not yet worked!"}
               {spotIsNewBandMode && ` · New ${activeSpot.band} ${activeSpot.mode}!`}
             </div>

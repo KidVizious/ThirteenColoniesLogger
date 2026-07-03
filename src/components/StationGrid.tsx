@@ -1,17 +1,27 @@
 import { useContacts } from "../store/contacts";
 import { useSettings } from "../store/settings";
-import { useCluster, getActiveSpots } from "../store/cluster";
+import { useCluster, getActiveSpots, type DxSpot } from "../store/cluster";
 import { STATIONS } from "../data/stations";
 import { StationTile } from "./StationTile";
 import "./StationGrid.css";
 
-export function StationGrid() {
+interface StationGridProps {
+  onSpotClick?: (spot: DxSpot) => void;
+}
+
+export function StationGrid({ onSpotClick }: StationGridProps) {
   const contacts = useContacts((s) => s.contacts);
   const spotWindowMins = useSettings((s) => s.spotWindowMins);
   const clusterEnabled = useSettings((s) => s.clusterEnabled);
   const spots = useCluster((s) => s.spots);
 
-  const activeSpots = clusterEnabled ? getActiveSpots(spots, spotWindowMins) : new Map();
+  const activeSpots = clusterEnabled
+    ? getActiveSpots(
+        spots,
+        spotWindowMins,
+        new Set(contacts.map((c) => `${c.callsign}|${c.band}|${c.mode}`))
+      )
+    : new Map();
 
   const colonies = STATIONS.filter((s) => s.type === "colony");
   const bonus = STATIONS.filter((s) => s.type === "bonus");
@@ -26,6 +36,7 @@ export function StationGrid() {
             station={station}
             contacts={contacts}
             activeSpot={activeSpots.get(station.callsign)}
+            onSpotClick={onSpotClick}
           />
         ))}
       </div>
@@ -37,6 +48,7 @@ export function StationGrid() {
             station={station}
             contacts={contacts}
             activeSpot={activeSpots.get(station.callsign)}
+            onSpotClick={onSpotClick}
           />
         ))}
       </div>

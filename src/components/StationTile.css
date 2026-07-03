@@ -21,6 +21,12 @@
   color: var(--state-worked-text);
 }
 
+.station-tile--worked .station-tile__name,
+.station-tile--worked .station-tile__number {
+  color: var(--state-worked-text);
+  opacity: 0.85;
+}
+
 .station-tile--bonus-needed {
   border: 1px dashed var(--accent-gold-dim);
 }
@@ -29,6 +35,16 @@
   border-color: var(--state-bonus-border);
   background: var(--state-bonus);
   animation: tile-worked 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.station-tile--bonus-worked .station-tile__callsign {
+  color: var(--accent-gold-bright);
+}
+
+.station-tile--bonus-worked .station-tile__name,
+.station-tile--bonus-worked .station-tile__number {
+  color: var(--accent-gold-bright);
+  opacity: 0.85;
 }
 
 .station-tile__header {
@@ -161,6 +177,20 @@
     animation: none;
     box-shadow: 0 0 0 2px var(--accent-gold);
   }
+}
+
+.station-tile__spot-badge--clickable {
+  cursor: pointer;
+  transition: transform 100ms, box-shadow 100ms;
+}
+
+.station-tile__spot-badge--clickable:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(201, 168, 76, 0.3);
+}
+
+.station-tile__spot-badge--clickable:active {
+  transform: scale(0.97);
 }
 
 /* Spot badge inside the tile */

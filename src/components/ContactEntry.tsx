@@ -9,13 +9,14 @@ import "./ContactEntry.css";
 
 interface ContactEntryProps {
   onToast: (msg: string) => void;
+  prefill?: { callsign: string; frequency: string; mode: string } | null;
 }
 
 function getRstForMode(mode: Mode): string {
   return mode === "SSB" ? "59" : "599";
 }
 
-export function ContactEntry({ onToast }: ContactEntryProps) {
+export function ContactEntry({ onToast, prefill }: ContactEntryProps) {
   const addContact = useContacts((s) => s.addContact);
   const isDupe = useContacts((s) => s.isDupe);
   const undoLastContact = useContacts((s) => s.undoLastContact);
@@ -42,6 +43,31 @@ export function ContactEntry({ onToast }: ContactEntryProps) {
   const [utcTime, setUtcTime] = useState(new Date().toISOString());
   const [editingTime, setEditingTime] = useState(false);
   const [editTimeValue, setEditTimeValue] = useState("");
+
+  // Handle prefill from spot click
+  useEffect(() => {
+    if (!prefill) return;
+    setCallsign(prefill.callsign);
+    setFrequency(prefill.frequency);
+    // Auto-detect band from frequency
+    const mhz = parseFloat(prefill.frequency);
+    if (!isNaN(mhz) && mhz > 0) {
+      const detected = freqToBand(mhz);
+      if (detected) setBand(detected);
+    }
+    // Set mode and RST defaults for that mode
+    const m = prefill.mode as Mode;
+    if (MODES.includes(m)) {
+      setMode(m);
+      setSentRst(getRstForMode(m));
+      setRcvdRst(getRstForMode(m));
+    }
+    // Pre-fill QTH from station data
+    const station = STATION_MAP.get(prefill.callsign);
+    if (station) setQth(station.state);
+    // Focus callsign field
+    setTimeout(() => callRef.current?.focus(), 50);
+  }, [prefill]);
 
   useEffect(() => {
     if (editingTime) return;

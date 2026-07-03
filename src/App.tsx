@@ -31,6 +31,7 @@ export default function App() {
   const [firstRunSetup, setFirstRunSetup] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [logPanelHeight, setLogPanelHeight] = useState(240);
+  const [spotPrefill, setSpotPrefill] = useState<{ callsign: string; frequency: string; mode: string } | null>(null);
   const logResizing = useRef(false);
   const logResizeStartY = useRef(0);
   const logResizeStartH = useRef(0);
@@ -177,12 +178,20 @@ export default function App() {
 
       <main className="app-main">
         <section className="entry-column">
-          <ContactEntry onToast={setToast} />
+          <ContactEntry onToast={setToast} prefill={spotPrefill} />
         </section>
 
         <section className="tracker-column">
           <SweepTracker />
-          <StationGrid />
+          <StationGrid onSpotClick={(spot) => {
+            setSpotPrefill({
+              callsign: spot.callsign,
+              frequency: String(spot.frequency),
+              mode: spot.mode,
+            });
+            // Reset prefill after a tick so repeated clicks on the same spot still trigger
+            setTimeout(() => setSpotPrefill(null), 100);
+          }} />
           <BandModeMatrix />
         </section>
       </main>

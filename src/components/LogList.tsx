@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback } from "react";
 import { MdEdit, MdDelete, MdCheck, MdClose } from "react-icons/md";
 import { useContacts } from "../store/contacts";
-import { STATION_MAP } from "../data/stations";
+import { STATION_MAP, BANDS, MODES } from "../data/stations";
+import type { Band, Mode } from "../data/stations";
 import type { QSO } from "../store/types";
 import "./LogList.css";
 
@@ -16,7 +17,6 @@ export function LogList() {
   const [editValues, setEditValues] = useState<Partial<QSO>>({});
   const [colWidths, setColWidths] = useState<number[]>(DEFAULT_COL_WIDTHS);
   const colResizing = useRef<{ idx: number; startX: number; startW: number } | null>(null);
-  // Separate raw strings for date and time editing to avoid crashes on intermediate input
   const [editTimeRaw, setEditTimeRaw] = useState("");
   const [editDateRaw, setEditDateRaw] = useState("");
 
@@ -58,17 +58,19 @@ export function LogList() {
     setEditingId(qso.id);
     setEditValues({
       callsign: qso.callsign,
-      qth: qso.qth,
-      notes: qso.notes,
+      band: qso.band,
+      mode: qso.mode,
+      frequency: qso.frequency,
       sentRst: qso.sentRst,
       rcvdRst: qso.rcvdRst,
+      qth: qso.qth,
+      notes: qso.notes,
       utcTime: qso.utcTime,
     });
-    // Initialize raw date/time strings for editing
     const d = new Date(qso.utcTime);
     if (!isNaN(d.getTime())) {
-      setEditDateRaw(d.toISOString().slice(0, 10));       // YYYY-MM-DD
-      setEditTimeRaw(d.toISOString().slice(11, 16));      // HH:MM
+      setEditDateRaw(d.toISOString().slice(0, 10));
+      setEditTimeRaw(d.toISOString().slice(11, 16));
     } else {
       setEditDateRaw("");
       setEditTimeRaw("");
@@ -76,7 +78,6 @@ export function LogList() {
   };
 
   const saveEdit = (id: string) => {
-    // Recombine date + time raw strings back to ISO
     const combined = `${editDateRaw}T${editTimeRaw}:00.000Z`;
     const parsed = new Date(combined);
     const finalValues = {
@@ -95,6 +96,12 @@ export function LogList() {
     setEditValues({});
     setEditTimeRaw("");
     setEditDateRaw("");
+  };
+
+  // Shared Enter/Escape key handler for all edit inputs
+  const editKeyDown = (e: React.KeyboardEvent, id: string) => {
+    if (e.key === "Enter") { e.preventDefault(); saveEdit(id); }
+    if (e.key === "Escape") { e.preventDefault(); cancelEdit(); }
   };
 
   const formatDate = (iso: string) => {
@@ -148,108 +155,160 @@ export function LogList() {
           </thead>
           <tbody>
             {filtered.map((qso, idx) => {
-              const station = STATION_MAP.get(qso.callsign);
+              const station = STATION_MAP.get(editValues.callsign?.toUpperCase() ?? qso.callsign)
+                           ?? STATION_MAP.get(qso.callsign);
               const rowNum = sortNewest ? contacts.length - idx : idx + 1;
               const isEditing = editingId === qso.id;
-              const borderClass = station
-                ? station.type === "colony"
+              const borderClass = STATION_MAP.get(qso.callsign)
+                ? STATION_MAP.get(qso.callsign)!.type === "colony"
                   ? "log-list__row--colony"
                   : "log-list__row--bonus"
                 : "";
-
-              // Check if this is the newest contact for gold flash
               const isNewest = contacts.length > 0 && qso.id === contacts[0].id;
 
               return (
                 <tr
                   key={qso.id}
-                  className={`log-list__row ${borderClass} ${isNewest && sortNewest && idx === 0 ? "log-list__row--new" : ""}`}
+                  className={`log-list__row ${borderClass} ${isNewest && sortNewest && idx === 0 ? "log-list__row--new" : ""} ${isEditing ? "log-list__row--editing" : ""}`}
                 >
+                  {/* # */}
                   <td className="log-list__cell-num">{rowNum}</td>
+
+                  {/* DATE */}
                   <td className="font-mono">
                     {isEditing ? (
                       <input
                         className="log-list__edit-input log-list__edit-input--date font-mono"
                         value={editDateRaw}
                         onChange={(e) => setEditDateRaw(e.target.value)}
+                        onKeyDown={(e) => editKeyDown(e, qso.id)}
                         placeholder="YYYY-MM-DD"
                       />
-                    ) : (
-                      formatDate(qso.utcTime)
-                    )}
+                    ) : formatDate(qso.utcTime)}
                   </td>
+
+                  {/* TIME */}
                   <td className="font-mono">
                     {isEditing ? (
                       <input
                         className="log-list__edit-input log-list__edit-input--time font-mono"
                         value={editTimeRaw}
                         onChange={(e) => setEditTimeRaw(e.target.value)}
+                        onKeyDown={(e) => editKeyDown(e, qso.id)}
                         placeholder="HH:MM"
                       />
-                    ) : (
-                      formatTime(qso.utcTime)
-                    )}
+                    ) : formatTime(qso.utcTime)}
                   </td>
+
+                  {/* CALLSIGN */}
                   <td className="font-mono">
                     {isEditing ? (
                       <input
                         className="log-list__edit-input font-mono"
                         value={editValues.callsign || ""}
                         onChange={(e) => setEditValues({ ...editValues, callsign: e.target.value.toUpperCase() })}
+                        onKeyDown={(e) => editKeyDown(e, qso.id)}
                       />
-                    ) : (
-                      qso.callsign
-                    )}
+                    ) : qso.callsign}
                   </td>
-                  <td>{qso.colonyName || station?.name || "—"}</td>
-                  <td className="font-mono">{qso.band}</td>
-                  <td className="font-mono">{qso.frequency || "—"}</td>
-                  <td className="font-mono">{qso.mode}</td>
+
+                  {/* COLONY / NAME — auto-derived, read-only */}
+                  <td>
+                    {station?.name || qso.colonyName || "—"}
+                  </td>
+
+                  {/* BAND */}
+                  <td className="font-mono">
+                    {isEditing ? (
+                      <select
+                        className="log-list__edit-select font-mono"
+                        value={editValues.band || qso.band}
+                        onChange={(e) => setEditValues({ ...editValues, band: e.target.value as Band })}
+                        onKeyDown={(e) => editKeyDown(e, qso.id)}
+                      >
+                        {BANDS.map((b) => <option key={b} value={b}>{b}</option>)}
+                      </select>
+                    ) : qso.band}
+                  </td>
+
+                  {/* FREQ */}
+                  <td className="font-mono">
+                    {isEditing ? (
+                      <input
+                        className="log-list__edit-input font-mono"
+                        value={editValues.frequency ?? qso.frequency}
+                        onChange={(e) => setEditValues({ ...editValues, frequency: e.target.value })}
+                        onKeyDown={(e) => editKeyDown(e, qso.id)}
+                        placeholder="MHz"
+                      />
+                    ) : (qso.frequency || "—")}
+                  </td>
+
+                  {/* MODE */}
+                  <td className="font-mono">
+                    {isEditing ? (
+                      <select
+                        className="log-list__edit-select font-mono"
+                        value={editValues.mode || qso.mode}
+                        onChange={(e) => setEditValues({ ...editValues, mode: e.target.value as Mode })}
+                        onKeyDown={(e) => editKeyDown(e, qso.id)}
+                      >
+                        {MODES.map((m) => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                    ) : qso.mode}
+                  </td>
+
+                  {/* SNT RST */}
                   <td className="font-mono">
                     {isEditing ? (
                       <input
                         className="log-list__edit-input font-mono"
                         value={editValues.sentRst || ""}
                         onChange={(e) => setEditValues({ ...editValues, sentRst: e.target.value })}
+                        onKeyDown={(e) => editKeyDown(e, qso.id)}
+                        maxLength={3}
                       />
-                    ) : (
-                      qso.sentRst
-                    )}
+                    ) : qso.sentRst}
                   </td>
+
+                  {/* RCV RST */}
                   <td className="font-mono">
                     {isEditing ? (
                       <input
                         className="log-list__edit-input font-mono"
                         value={editValues.rcvdRst || ""}
                         onChange={(e) => setEditValues({ ...editValues, rcvdRst: e.target.value })}
+                        onKeyDown={(e) => editKeyDown(e, qso.id)}
+                        maxLength={3}
                       />
-                    ) : (
-                      qso.rcvdRst
-                    )}
+                    ) : qso.rcvdRst}
                   </td>
+
+                  {/* QTH */}
                   <td className="font-mono">
                     {isEditing ? (
                       <input
                         className="log-list__edit-input font-mono"
                         value={editValues.qth || ""}
-                        onChange={(e) => setEditValues({ ...editValues, qth: e.target.value })}
+                        onChange={(e) => setEditValues({ ...editValues, qth: e.target.value.toUpperCase() })}
+                        onKeyDown={(e) => editKeyDown(e, qso.id)}
                       />
-                    ) : (
-                      qso.qth
-                    )}
+                    ) : qso.qth}
                   </td>
+
+                  {/* NOTES */}
                   <td>
                     {isEditing ? (
                       <input
                         className="log-list__edit-input"
                         value={editValues.notes || ""}
                         onChange={(e) => setEditValues({ ...editValues, notes: e.target.value })}
-                        onKeyDown={(e) => { if (e.key === "Enter") saveEdit(qso.id); if (e.key === "Escape") cancelEdit(); }}
+                        onKeyDown={(e) => editKeyDown(e, qso.id)}
                       />
-                    ) : (
-                      qso.notes
-                    )}
+                    ) : qso.notes}
                   </td>
+
+                  {/* ACTIONS */}
                   <td className="log-list__actions">
                     {isEditing ? (
                       <>

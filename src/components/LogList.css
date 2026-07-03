@@ -221,3 +221,23 @@
 .log-list__edit-input--date {
   width: 90px;
 }
+
+/* Editing row highlight */
+.log-list__row--editing {
+  background: var(--bg-overlay) !important;
+}
+
+/* Select in edit mode — matches input styling */
+.log-list__edit-select {
+  width: 100%;
+  height: 1.5rem;
+  padding: 0 0.25rem;
+  font-size: 0.75rem;
+  background: var(--bg-elevated);
+  border: none;
+  border-bottom: 2px solid var(--border-focus);
+  color: var(--text-primary);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
