@@ -1,5 +1,5 @@
 import { useContacts } from "../store/contacts";
-import { BANDS, STATION_MAP } from "../data/stations";
+import { BANDS, MODES, STATION_MAP } from "../data/stations";
 import "./BandModeMatrix.css";
 
 interface BandModeMatrixProps {
@@ -19,7 +19,7 @@ export function BandModeMatrix({ compact = false }: BandModeMatrixProps) {
     }
   }
 
-  const displayModes = ["SSB", "CW", "RTTY", "FT8", "DIG"] as const;
+  const displayModes = MODES;
 
   return (
     <div className="band-mode-matrix">

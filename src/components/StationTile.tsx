@@ -91,7 +91,7 @@ export function StationTile({ station, contacts, activeSpot, onSpotClick }: Stat
       )}
 
       <div className="station-tile__pips">
-        {(["SSB", "CW", "RTTY", "FT8", "DIG"] as const).map((m) => (
+        {MODES.map((m) => (
           <span
             key={m}
             className={`station-tile__pip ${workedModes.has(m) ? "station-tile__pip--filled" : ""}`}

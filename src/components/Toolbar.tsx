@@ -24,6 +24,16 @@ export function Toolbar({ onSettingsClick }: ToolbarProps) {
   const saveToBackend = useSettings((s) => s.saveToBackend);
 
   const [yearPickerOpen, setYearPickerOpen] = useState(false);
+  const { clusterHost, clusterPort } = useSettings();
+  const cluster = useCluster();
+
+  const handleClusterToggle = async () => {
+    if (clusterStatus.connected || clusterConnecting) {
+      await cluster.disconnect();
+    } else if (clusterEnabled) {
+      await cluster.connect(clusterHost, clusterPort, myCallsign);
+    }
+  };
 
   const now = new Date();
   const month = now.getUTCMonth();
@@ -167,6 +177,8 @@ export function Toolbar({ onSettingsClick }: ToolbarProps) {
           <span
             className={`toolbar__cluster-badge ${clusterStatus.connected ? "toolbar__cluster-badge--on" : clusterConnecting ? "toolbar__cluster-badge--connecting" : "toolbar__cluster-badge--off"}`}
             title={clusterStatus.message}
+            onClick={handleClusterToggle}
+            style={{ cursor: 'pointer' }}
           >
             <MdSatelliteAlt size={12} />
             {clusterConnecting ? "…" : clusterStatus.connected ? "CLUSTER" : "OFFLINE"}
