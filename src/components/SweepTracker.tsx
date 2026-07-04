@@ -14,7 +14,6 @@ export function SweepTracker() {
   const workedBonus = bonusStations.filter((s) => workedCallsigns.has(s.callsign));
 
   const colonySweep = workedColonies.length === 13;
-  const hasWM3PEN = workedCallsigns.has("WM3PEN");
   const fullSweep = colonySweep && workedBonus.length === 3;
 
   const neededColonies = colonies.filter((s) => !workedCallsigns.has(s.callsign));
@@ -39,9 +38,6 @@ export function SweepTracker() {
       <div className="sweep-tracker__achievements">
         <span className={`sweep-tracker__badge ${colonySweep ? "sweep-tracker__badge--achieved" : ""}`}>
           13 COLONIES SWEEP
-        </span>
-        <span className={`sweep-tracker__badge ${colonySweep && hasWM3PEN ? "sweep-tracker__badge--achieved" : ""}`}>
-          + WM3PEN
         </span>
         <span className={`sweep-tracker__badge ${fullSweep ? "sweep-tracker__badge--achieved" : ""}`}>
           FULL SWEEP
