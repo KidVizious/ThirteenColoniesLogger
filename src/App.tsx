@@ -10,6 +10,7 @@ import { StationGrid } from "./components/StationGrid";
 import { BandModeMatrix } from "./components/BandModeMatrix";
 import { LogList } from "./components/LogList";
 import { SettingsModal } from "./components/SettingsModal";
+import { Statistics } from "./components/Statistics";
 import { Toast } from "./components/Toast";
 
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
   const contacts = useContacts((s) => s.contacts);
   const { connect: clusterConnect, disconnect: clusterDisconnect, processSpot } = useCluster();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
   const [firstRunSetup, setFirstRunSetup] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [logPanelHeight, setLogPanelHeight] = useState(240);
@@ -173,27 +175,37 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <Toolbar onSettingsClick={() => setSettingsOpen(true)} />
+        <Toolbar
+          onSettingsClick={() => setSettingsOpen(true)}
+          onStatsClick={() => setStatsOpen(!statsOpen)}
+          statsActive={statsOpen}
+        />
       </header>
 
       <main className="app-main">
-        <section className="entry-column">
-          <ContactEntry onToast={setToast} prefill={spotPrefill} />
-        </section>
+        {statsOpen ? (
+          <Statistics />
+        ) : (
+          <>
+            <section className="entry-column">
+              <ContactEntry onToast={setToast} prefill={spotPrefill} />
+            </section>
 
-        <section className="tracker-column">
-          <SweepTracker />
-          <StationGrid onSpotClick={(spot) => {
-            setSpotPrefill({
-              callsign: spot.callsign,
-              frequency: String(spot.frequency),
-              mode: spot.mode,
-            });
-            // Reset prefill after a tick so repeated clicks on the same spot still trigger
-            setTimeout(() => setSpotPrefill(null), 100);
-          }} />
-          <BandModeMatrix />
-        </section>
+            <section className="tracker-column">
+              <SweepTracker />
+              <StationGrid onSpotClick={(spot) => {
+                setSpotPrefill({
+                  callsign: spot.callsign,
+                  frequency: String(spot.frequency),
+                  mode: spot.mode,
+                });
+                // Reset prefill after a tick so repeated clicks on the same spot still trigger
+                setTimeout(() => setSpotPrefill(null), 100);
+              }} />
+              <BandModeMatrix />
+            </section>
+          </>
+        )}
       </main>
 
       <div

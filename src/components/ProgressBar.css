@@ -19,3 +19,7 @@
 .progress-bar__fill--bonus {
   background: var(--progress-bonus);
 }
+
+.progress-bar__fill--default {
+  background: var(--accent-gold-dim);
+}

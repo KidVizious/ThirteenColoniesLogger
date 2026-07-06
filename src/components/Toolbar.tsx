@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { save } from "@tauri-apps/plugin-dialog";
-import { MdSettings, MdFileDownload, MdDarkMode, MdLightMode, MdBrightness6, MdExpandMore, MdSatelliteAlt } from "react-icons/md";
+import { MdSettings, MdFileDownload, MdDarkMode, MdLightMode, MdBrightness6, MdExpandMore, MdSatelliteAlt, MdBarChart } from "react-icons/md";
 import { useSettings } from "../store/settings";
 import { useContacts } from "../store/contacts";
 import { useCluster } from "../store/cluster";
@@ -9,9 +9,11 @@ import "./Toolbar.css";
 
 interface ToolbarProps {
   onSettingsClick: () => void;
+  onStatsClick: () => void;
+  statsActive: boolean;
 }
 
-export function Toolbar({ onSettingsClick }: ToolbarProps) {
+export function Toolbar({ onSettingsClick, onStatsClick, statsActive }: ToolbarProps) {
   const { myCallsign, theme, setTheme } = useSettings();
   const clusterEnabled = useSettings((s) => s.clusterEnabled);
   const contacts = useContacts((s) => s.contacts);
@@ -188,6 +190,15 @@ export function Toolbar({ onSettingsClick }: ToolbarProps) {
         <button className="toolbar__btn" onClick={handleExport} title="Export ADIF">
           <MdFileDownload size={16} />
           <span>ADIF</span>
+        </button>
+
+        <button
+          className={`toolbar__btn ${statsActive ? "toolbar__btn--active" : ""}`}
+          onClick={onStatsClick}
+          title="Statistics"
+        >
+          <MdBarChart size={16} />
+          <span>Stats</span>
         </button>
 
         <button

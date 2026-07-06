@@ -1,0 +1,203 @@
+.statistics {
+  padding: 1rem 1.25rem 2rem;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.statistics__header {
+  margin-bottom: 1.25rem;
+}
+
+.statistics__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ── Grid of summary cards ── */
+.statistics__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.stats-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 0.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  text-align: center;
+  transition: border-color 200ms, transform 150ms;
+}
+
+.stats-card:hover {
+  border-color: var(--border-default);
+  transform: translateY(-1px);
+}
+
+.stats-card__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.stats-card--gold .stats-card__value {
+  color: var(--accent-gold);
+}
+
+.stats-card--green .stats-card__value {
+  color: var(--state-worked-text);
+}
+
+.stats-card--blue .stats-card__value {
+  color: #7ea8d8;
+}
+
+.stats-card__label {
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.stats-card__sub {
+  font-size: 0.625rem;
+  color: var(--text-secondary);
+  margin-top: 0.125rem;
+}
+
+/* ── Section blocks ── */
+.statistics__section {
+  margin-bottom: 1.5rem;
+}
+
+.statistics__section-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Activity breakdown cards ── */
+.statistics__breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.statistics__breakdown-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+}
+
+.statistics__breakdown-label {
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.375rem;
+}
+
+.statistics__breakdown-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.statistics__breakdown-sub {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  margin-top: 0.125rem;
+}
+
+/* ── Award rows ── */
+.statistics__award-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.statistics__award-row {
+  display: grid;
+  grid-template-columns: 140px 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+}
+
+.statistics__award-name {
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.statistics__award-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+/* ── Needed tags ── */
+.statistics__needed-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.statistics__needed-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.statistics__needed-label {
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.statistics__needed-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.statistics__needed-tag {
+  padding: 0.25rem 0.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.statistics__needed-tag--bonus {
+  border-color: var(--accent-gold-dim);
+  color: var(--accent-gold);
+  background: rgba(201, 168, 76, 0.08);
+}

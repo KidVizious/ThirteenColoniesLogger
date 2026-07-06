@@ -3,7 +3,7 @@ import "./ProgressBar.css";
 interface ProgressBarProps {
   value: number;
   max: number;
-  variant: "colony" | "bonus";
+  variant: "colony" | "bonus" | "default";
 }
 
 export function ProgressBar({ value, max, variant }: ProgressBarProps) {
