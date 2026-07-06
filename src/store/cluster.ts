@@ -155,19 +155,25 @@ export function getActiveSpots(
   spots: DxSpot[],
   windowMins: number,
   workedBandMode: Set<string>   // Set of "CALLSIGN|band|mode" keys from the contact log
-): Map<string, DxSpot> {
+): Map<string, DxSpot[]> {
   const cutoff = Date.now() - windowMins * 60 * 1000;
-  const result = new Map<string, DxSpot>();
+  const result = new Map<string, DxSpot[]>();
+  const seenBandMode = new Set<string>(); // De-dupe: keep only most recent spot per callsign+band+mode
 
   for (const spot of spots) {
     if (!STATION_MAP.has(spot.callsign)) continue;
     if (new Date(spot.utc_time).getTime() < cutoff) continue;
     // Skip if this exact band+mode is already in the log
     if (workedBandMode.has(`${spot.callsign}|${spot.band}|${spot.mode}`)) continue;
-    // spots are newest-first; first match per callsign is the most recent
+
+    const bandModeKey = `${spot.callsign}|${spot.band}|${spot.mode}`;
+    if (seenBandMode.has(bandModeKey)) continue;
+    seenBandMode.add(bandModeKey);
+
     if (!result.has(spot.callsign)) {
-      result.set(spot.callsign, spot);
+      result.set(spot.callsign, []);
     }
+    result.get(spot.callsign)!.push(spot);
   }
 
   return result;

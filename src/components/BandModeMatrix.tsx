@@ -68,8 +68,12 @@ export function BandModeMatrix({ compact = false }: BandModeMatrixProps) {
                       <span className="font-mono">{totalWorked}</span>
                     ) : (
                       <div className="band-mode-matrix__cell-stacks">
-                        <span className="font-mono">{coloniesWorked}/{colonyCount}</span>
-                        <span className="font-mono">{bonusWorked}/{bonusCount}</span>
+                        <span className={`font-mono ${coloniesWorked >= colonyCount ? "band-mode-matrix__cell-stack--achieved" : ""}`}>
+                          {coloniesWorked}/{colonyCount}
+                        </span>
+                        <span className={`font-mono ${bonusWorked >= bonusCount ? "band-mode-matrix__cell-stack--achieved" : ""}`}>
+                          {bonusWorked}/{bonusCount}
+                        </span>
                       </div>
                     )}
 

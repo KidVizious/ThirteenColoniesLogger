@@ -35,7 +35,7 @@ export function StationGrid({ onSpotClick }: StationGridProps) {
             key={station.callsign}
             station={station}
             contacts={contacts}
-            activeSpot={activeSpots.get(station.callsign)}
+            activeSpots={activeSpots.get(station.callsign)}
             onSpotClick={onSpotClick}
           />
         ))}
@@ -47,7 +47,7 @@ export function StationGrid({ onSpotClick }: StationGridProps) {
             key={station.callsign}
             station={station}
             contacts={contacts}
-            activeSpot={activeSpots.get(station.callsign)}
+            activeSpots={activeSpots.get(station.callsign)}
             onSpotClick={onSpotClick}
           />
         ))}
